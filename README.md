@@ -4,11 +4,12 @@ A pack of **43 native HuntProxy flows**, ported from the official
 [Caido community workflow store](https://github.com/caido-community/workflows).
 Import them and they run out of the box — no compatibility layer, no HTTPQL.
 
-Every flow in this pack is a **native HuntProxy flow definition** (edition 1).
-The port was produced by HuntProxy's own Caido importer: TypeScript scripts were
-compiled and inlined, match queries were rewritten into HuntProxy's query
-language, and Caido's branch-on-match nodes were split into explicit
-if/else logic. Nothing is emulated at runtime.
+Every flow in this pack is a **native HuntProxy flow definition** (edition 1),
+produced by a one-time port: TypeScript scripts were compiled and inlined,
+match queries were rewritten into HuntProxy's query language, and Caido's
+branch-on-match nodes were split into explicit if/else logic. Nothing is
+emulated at runtime; HuntProxy has no Caido importer and rejects Caido-format
+definitions at the API.
 
 ## Importing
 
@@ -94,14 +95,16 @@ convert view.
   `input.request` / `input.response` handles).
 - **Store bugs.** A few store workflows reference nodes that do not exist in
   their published graph (Caido evaluates these as null). The port preserves
-  that behaviour with empty values where the importer requires a concrete
+  that behaviour with empty values where the definition requires a concrete
   input.
 
-## Regenerating
+## Adding workflows
 
-The port is reproducible: HuntProxy's `import_caido_definition` consumes a
-store workflow (definition.json + javascript.ts) and emits a native
-definition. Feed it the store sources and write the output here.
+These are curated native HuntProxy definitions — there is no importer and no
+Caido support at runtime. To add a workflow, write it by hand against the
+[flow node catalog](https://github.com/herraristotle/HuntProxy) (Flows →
+node reference in the UI, or `GET /api/v1/flow-nodes`), or port one from
+another tool offline and drop the resulting edition-1 JSON in `flows/`.
 
 ## License
 
