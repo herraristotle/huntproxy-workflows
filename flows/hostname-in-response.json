@@ -1,0 +1,102 @@
+{
+  "edition": 1,
+  "kind": "passive",
+  "name": "Hostname in Response",
+  "description": "Finds responses which contain the hostname.\n\nUseful to identify possible attack surface for host header injection and web cache poisioning attacks.",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/in-scope",
+        "alias": "in_scope",
+        "display": {
+          "x": -30,
+          "y": -40
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": -50,
+          "y": 140
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/hostname-in-response/javascript.ts\nasync function run({ request, response }, sdk) {\n  if (request && response) {\n    const host = request.getHeader(\"Host\")[0];\n    if (response.getBody().toText().indexOf(host) != -1) {\n      const description = `The response from the request to ${request.getHost()}${request.getPath()} has a the host header value reflected in the body. This may be useful for host header injection and web cache poisioning attacks.`;\n      await sdk.findings.create({\n        title: \"Hostname in Response\",\n        description,\n        request,\n        reporter: \"HostnameInResponse\",\n        dedupeKey: description\n      });\n    }\n  }\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "on_intercept_response",
+            "output": "exchange"
+          }
+        }
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "if_else",
+        "display": {
+          "x": -40,
+          "y": 40
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "in_scope",
+            "output": "result"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      },
+      {
+        "type": "flow/on-intercept-response",
+        "alias": "on_intercept_response",
+        "display": {
+          "x": -30,
+          "y": -130
+        },
+        "inputs": {}
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "in_scope",
+          "port": "true"
+        },
+        "target": {
+          "node": "if_else",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "on_intercept_response",
+          "port": "exec"
+        },
+        "target": {
+          "node": "in_scope",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else",
+          "port": "true"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

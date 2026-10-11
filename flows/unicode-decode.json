@@ -1,0 +1,50 @@
+{
+  "edition": 1,
+  "kind": "convert",
+  "name": "Unicode Decode",
+  "description": "Workflow to decode unicode",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/manual-start",
+        "alias": "convert_start",
+        "display": {
+          "x": 0,
+          "y": 0
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": 0,
+          "y": 90
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/unicode-decode/javascript.ts\nfunction run(input, sdk) {\n  const parsed = sdk.asString(input);\n  let result = \"\";\n  const chars = parsed.match(/\\\\u[\\dA-F]{4}/gi);\n  if (chars) {\n    for (let i = 0; i < chars.length; i++) {\n      const char = chars[i];\n      if (char !== void 0) {\n        result += String.fromCharCode(parseInt(char.replace(\"\\\\u\", \"\"), 16));\n      }\n    }\n  }\n  sdk.console.log(parsed);\n  return result;\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "convert_start",
+            "output": "input"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "convert_start",
+          "port": "exec"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

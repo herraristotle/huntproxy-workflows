@@ -1,0 +1,50 @@
+{
+  "edition": 1,
+  "kind": "convert",
+  "name": "URL Encode",
+  "description": "URL encode a string",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/manual-start",
+        "alias": "start",
+        "display": {
+          "x": 0,
+          "y": -130
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/js",
+        "alias": "url_encode",
+        "display": {
+          "x": 0,
+          "y": 30
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "function run(input) {\n  const text = typeof input === \"string\" ? input : JSON.stringify(input);\n  return encodeURIComponent(text);\n}"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "start",
+            "output": "input"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "start",
+          "port": "exec"
+        },
+        "target": {
+          "node": "url_encode",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

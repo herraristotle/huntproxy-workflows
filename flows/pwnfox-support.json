@@ -1,0 +1,669 @@
+{
+  "edition": 1,
+  "kind": "passive",
+  "name": "PwnFox Support",
+  "description": "Custom X-PwnFox-Color header support",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/on-intercept-response",
+        "alias": "on_intercept_request",
+        "display": {
+          "x": -20,
+          "y": -100
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/query-match",
+        "alias": "pwnfox_blue",
+        "display": {
+          "x": -20,
+          "y": 20
+        },
+        "inputs": {
+          "query": {
+            "kind": "const",
+            "value": "request:~\"X-PwnFox-Color: blue\""
+          }
+        }
+      },
+      {
+        "type": "flow/query-match",
+        "alias": "pwnfox_cyan",
+        "display": {
+          "x": -20,
+          "y": 120
+        },
+        "inputs": {
+          "query": {
+            "kind": "const",
+            "value": "request:~\"X-PwnFox-Color: cyan\""
+          }
+        }
+      },
+      {
+        "type": "flow/query-match",
+        "alias": "pwnfox_green",
+        "display": {
+          "x": -20,
+          "y": 220
+        },
+        "inputs": {
+          "query": {
+            "kind": "const",
+            "value": "request:~\"X-PwnFox-Color: green\""
+          }
+        }
+      },
+      {
+        "type": "flow/query-match",
+        "alias": "pwnfox_yellow",
+        "display": {
+          "x": -20,
+          "y": 320
+        },
+        "inputs": {
+          "query": {
+            "kind": "const",
+            "value": "request:~\"X-PwnFox-Color: yellow\""
+          }
+        }
+      },
+      {
+        "type": "flow/query-match",
+        "alias": "pwnfox_orange",
+        "display": {
+          "x": -20,
+          "y": 420
+        },
+        "inputs": {
+          "query": {
+            "kind": "const",
+            "value": "request:~\"X-PwnFox-Color: orange\""
+          }
+        }
+      },
+      {
+        "type": "flow/query-match",
+        "alias": "pwnfox_red",
+        "display": {
+          "x": -20,
+          "y": 520
+        },
+        "inputs": {
+          "query": {
+            "kind": "const",
+            "value": "request:~\"X-PwnFox-Color: red\""
+          }
+        }
+      },
+      {
+        "type": "flow/query-match",
+        "alias": "pwnfox_pink",
+        "display": {
+          "x": -20,
+          "y": 620
+        },
+        "inputs": {
+          "query": {
+            "kind": "const",
+            "value": "request:~\"X-PwnFox-Color: pink\""
+          }
+        }
+      },
+      {
+        "type": "flow/query-match",
+        "alias": "pwnfox_magenta",
+        "display": {
+          "x": -20,
+          "y": 720
+        },
+        "inputs": {
+          "query": {
+            "kind": "const",
+            "value": "request:~\"X-PwnFox-Color: magenta\""
+          }
+        }
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "if_else",
+        "display": {
+          "x": -20,
+          "y": 830
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "pwnfox_blue",
+            "output": "matches"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "if_else_1",
+        "display": {
+          "x": 120,
+          "y": 920
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "pwnfox_cyan",
+            "output": "matches"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "if_else_2",
+        "display": {
+          "x": 400,
+          "y": 1080
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "pwnfox_yellow",
+            "output": "matches"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "if_else_3",
+        "display": {
+          "x": 540,
+          "y": 1170
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "pwnfox_orange",
+            "output": "matches"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "if_else_4",
+        "display": {
+          "x": 260,
+          "y": 1000
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "pwnfox_green",
+            "output": "matches"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "if_else_5",
+        "display": {
+          "x": 680,
+          "y": 1260
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "pwnfox_red",
+            "output": "matches"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "if_else_6",
+        "display": {
+          "x": 820,
+          "y": 1340
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "pwnfox_pink",
+            "output": "matches"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      },
+      {
+        "type": "flow/set-color",
+        "alias": "set_color",
+        "display": {
+          "x": -30,
+          "y": 1060
+        },
+        "inputs": {
+          "color": {
+            "kind": "const",
+            "value": "blue"
+          }
+        }
+      },
+      {
+        "type": "flow/set-color",
+        "alias": "set_color_1",
+        "display": {
+          "x": 110,
+          "y": 1120
+        },
+        "inputs": {
+          "color": {
+            "kind": "const",
+            "value": "#159f64"
+          }
+        }
+      },
+      {
+        "type": "flow/set-color",
+        "alias": "set_color_2",
+        "display": {
+          "x": 250,
+          "y": 1180
+        },
+        "inputs": {
+          "color": {
+            "kind": "const",
+            "value": "green"
+          }
+        }
+      },
+      {
+        "type": "flow/set-color",
+        "alias": "set_color_3",
+        "display": {
+          "x": 390,
+          "y": 1250
+        },
+        "inputs": {
+          "color": {
+            "kind": "const",
+            "value": "#9c9d0d"
+          }
+        }
+      },
+      {
+        "type": "flow/set-color",
+        "alias": "set_color_4",
+        "display": {
+          "x": 530,
+          "y": 1330
+        },
+        "inputs": {
+          "color": {
+            "kind": "const",
+            "value": "orange"
+          }
+        }
+      },
+      {
+        "type": "flow/set-color",
+        "alias": "set_color_5",
+        "display": {
+          "x": 670,
+          "y": 1390
+        },
+        "inputs": {
+          "color": {
+            "kind": "const",
+            "value": "red"
+          }
+        }
+      },
+      {
+        "type": "flow/set-color",
+        "alias": "set_color_6",
+        "display": {
+          "x": 810,
+          "y": 1470
+        },
+        "inputs": {
+          "color": {
+            "kind": "const",
+            "value": "pink"
+          }
+        }
+      },
+      {
+        "type": "flow/set-color",
+        "alias": "set_color_7",
+        "display": {
+          "x": 1060,
+          "y": 1510
+        },
+        "inputs": {
+          "color": {
+            "kind": "const",
+            "value": "purple"
+          }
+        }
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "if_else_7",
+        "display": {
+          "x": 970,
+          "y": 1430
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "pwnfox_magenta",
+            "output": "matches"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "on_intercept_request",
+          "port": "exec"
+        },
+        "target": {
+          "node": "pwnfox_blue",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "pwnfox_blue",
+          "port": "ok"
+        },
+        "target": {
+          "node": "pwnfox_cyan",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "pwnfox_cyan",
+          "port": "ok"
+        },
+        "target": {
+          "node": "pwnfox_green",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "pwnfox_green",
+          "port": "ok"
+        },
+        "target": {
+          "node": "pwnfox_yellow",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "pwnfox_yellow",
+          "port": "ok"
+        },
+        "target": {
+          "node": "pwnfox_orange",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "pwnfox_red",
+          "port": "ok"
+        },
+        "target": {
+          "node": "pwnfox_pink",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "pwnfox_pink",
+          "port": "ok"
+        },
+        "target": {
+          "node": "pwnfox_magenta",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "pwnfox_orange",
+          "port": "ok"
+        },
+        "target": {
+          "node": "pwnfox_red",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "pwnfox_magenta",
+          "port": "ok"
+        },
+        "target": {
+          "node": "if_else",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else",
+          "port": "false"
+        },
+        "target": {
+          "node": "if_else_1",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_4",
+          "port": "false"
+        },
+        "target": {
+          "node": "if_else_2",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_2",
+          "port": "false"
+        },
+        "target": {
+          "node": "if_else_3",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else",
+          "port": "true"
+        },
+        "target": {
+          "node": "set_color",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_1",
+          "port": "false"
+        },
+        "target": {
+          "node": "if_else_4",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_4",
+          "port": "true"
+        },
+        "target": {
+          "node": "set_color_2",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_2",
+          "port": "true"
+        },
+        "target": {
+          "node": "set_color_3",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_3",
+          "port": "true"
+        },
+        "target": {
+          "node": "set_color_4",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_5",
+          "port": "true"
+        },
+        "target": {
+          "node": "set_color_5",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_3",
+          "port": "false"
+        },
+        "target": {
+          "node": "if_else_5",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_5",
+          "port": "false"
+        },
+        "target": {
+          "node": "if_else_6",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_1",
+          "port": "true"
+        },
+        "target": {
+          "node": "set_color_1",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_6",
+          "port": "true"
+        },
+        "target": {
+          "node": "set_color_6",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_6",
+          "port": "false"
+        },
+        "target": {
+          "node": "if_else_7",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_7",
+          "port": "true"
+        },
+        "target": {
+          "node": "set_color_7",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "edition": 1,
+  "kind": "convert",
+  "name": "Get Random UUID",
+  "description": "Workflow for generating a random UUID.",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/manual-start",
+        "alias": "convert_start",
+        "display": {
+          "x": 0,
+          "y": -180
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": 0,
+          "y": -40
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/get-random-uuid/javascript.ts\nfunction run(input, sdk) {\n  const uuid = generateUUID();\n  const parsed = sdk.asString(uuid);\n  return parsed;\n}\nfunction generateUUID() {\n  let d = (/* @__PURE__ */ new Date()).getTime();\n  let d2 = 0;\n  return \"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx\".replace(/[xy]/g, function(c) {\n    let r = Math.random() * 16;\n    if (d > 0) {\n      r = (d + r) % 16 | 0;\n      d = Math.floor(d / 16);\n    } else {\n      r = (d2 + r) % 16 | 0;\n      d2 = Math.floor(d2 / 16);\n    }\n    return (c === \"x\" ? r : r & 3 | 8).toString(16);\n  });\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "convert_start",
+            "output": "input"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "convert_start",
+          "port": "exec"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

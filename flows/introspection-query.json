@@ -1,0 +1,50 @@
+{
+  "edition": 1,
+  "kind": "convert",
+  "name": "Introspection Query",
+  "description": "Useful to ask a GraphQL schema for information about what queries it supports, if enabled.",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/manual-start",
+        "alias": "convert_start",
+        "display": {
+          "x": -110,
+          "y": -210
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": -20,
+          "y": -40
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/introspection-query/javascript.ts\nfunction run() {\n  const introspectionQuery = '{\"query\":\"query IntrospectionQuery {\\\\n    __schema {\\\\n        queryType {\\\\n            name\\\\n        }\\\\n        mutationType {\\\\n            name\\\\n        }\\\\n        subscriptionType {\\\\n            name\\\\n        }\\\\n        types {\\\\n            ...FullType\\\\n        }\\\\n        directives {\\\\n            name\\\\n            description\\\\n            locations\\\\n            args {\\\\n                ...InputValue\\\\n            }\\\\n        }\\\\n    }\\\\n}\\\\n\\\\nfragment FullType on __Type {\\\\n    kind\\\\n    name\\\\n    description\\\\n    fields(includeDeprecated: true) {\\\\n        name\\\\n        description\\\\n        args {\\\\n            ...InputValue\\\\n        }\\\\n        type {\\\\n            ...TypeRef\\\\n        }\\\\n        isDeprecated\\\\n        deprecationReason\\\\n    }\\\\n    inputFields {\\\\n        ...InputValue\\\\n    }\\\\n    interfaces {\\\\n        ...TypeRef\\\\n    }\\\\n    enumValues(includeDeprecated: true) {\\\\n        name\\\\n        description\\\\n        isDeprecated\\\\n        deprecationReason\\\\n    }\\\\n    possibleTypes {\\\\n        ...TypeRef\\\\n    }\\\\n}\\\\n\\\\nfragment InputValue on __InputValue {\\\\n    name\\\\n    description\\\\n    type {\\\\n        ...TypeRef\\\\n    }\\\\n    defaultValue\\\\n}\\\\n\\\\nfragment TypeRef on __Type {\\\\n    kind\\\\n    name\\\\n    ofType {\\\\n        kind\\\\n        name\\\\n        ofType {\\\\n            kind\\\\n            name\\\\n            ofType {\\\\n                kind\\\\n                name\\\\n            }\\\\n        }\\\\n    }\\\\n}\"}';\n  return introspectionQuery;\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "convert_start",
+            "output": "input"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "convert_start",
+          "port": "exec"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

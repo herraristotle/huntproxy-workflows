@@ -1,0 +1,50 @@
+{
+  "edition": 1,
+  "kind": "convert",
+  "name": "Base64 Decode",
+  "description": "Base64 decode a string",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/manual-start",
+        "alias": "start",
+        "display": {
+          "x": 0,
+          "y": -150
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/js",
+        "alias": "base64_decode",
+        "display": {
+          "x": 0,
+          "y": 30
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "\nconst ALPHA = \"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/\";\nfunction b64encode(bytes, pad) {\n  let out = \"\";\n  for (let i = 0; i < bytes.length; i += 3) {\n    let n = (bytes[i] << 16) | ((bytes[i + 1] || 0) << 8) | (bytes[i + 2] || 0);\n    out += ALPHA[(n >> 18) & 63] + ALPHA[(n >> 12) & 63];\n    out += i + 1 < bytes.length ? ALPHA[(n >> 6) & 63] : (pad ? \"=\" : \"\");\n    out += i + 2 < bytes.length ? ALPHA[n & 63] : (pad ? \"=\" : \"\");\n  }\n  return out;\n}\nfunction b64decode(text) {\n  const clean = text.replace(/=+$/, \"\").replace(/-/g, \"+\").replace(/_/g, \"/\");\n  const bytes = [];\n  let buffer = 0, bits = 0;\n  for (const ch of clean) {\n    const v = ALPHA.indexOf(ch);\n    if (v < 0) continue;\n    buffer = (buffer << 6) | v;\n    bits += 6;\n    if (bits >= 8) {\n      bits -= 8;\n      bytes.push((buffer >> bits) & 0xff);\n    }\n  }\n  return bytes;\n}\nfunction utf8bytes(str) {\n  const out = [];\n  for (let i = 0; i < str.length; i++) {\n    let c = str.charCodeAt(i);\n    if (c < 0x80) out.push(c);\n    else if (c < 0x800) {\n      out.push(0xc0 | (c >> 6), 0x80 | (c & 63));\n    } else if (c >= 0xd800 && c <= 0xdbff && i + 1 < str.length) {\n      const lo = str.charCodeAt(++i);\n      const cp = 0x10000 + ((c - 0xd800) << 10) + (lo - 0xdc00);\n      out.push(\n        0xf0 | (cp >> 18),\n        0x80 | ((cp >> 12) & 63),\n        0x80 | ((cp >> 6) & 63),\n        0x80 | (cp & 63)\n      );\n    } else {\n      out.push(0xe0 | (c >> 12), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63));\n    }\n  }\n  return out;\n}\nfunction utf8string(bytes) {\n  let out = \"\";\n  for (let i = 0; i < bytes.length; ) {\n    const b = bytes[i++];\n    let cp;\n    if (b < 0x80) cp = b;\n    else if ((b & 0xe0) === 0xc0) cp = ((b & 0x1f) << 6) | (bytes[i++] & 0x3f);\n    else if ((b & 0xf0) === 0xe0)\n      cp = ((b & 0x0f) << 12) | ((bytes[i++] & 0x3f) << 6) | (bytes[i++] & 0x3f);\n    else\n      cp =\n        ((b & 0x07) << 18) |\n        ((bytes[i++] & 0x3f) << 12) |\n        ((bytes[i++] & 0x3f) << 6) |\n        (bytes[i++] & 0x3f);\n    if (cp < 0x10000) out += String.fromCharCode(cp);\n    else {\n      cp -= 0x10000;\n      out += String.fromCharCode(0xd800 + (cp >> 10), 0xdc00 + (cp & 0x3ff));\n    }\n  }\n  return out;\n}\n\nfunction run(input) {\n  return utf8string(b64decode(String(input)));\n}"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "start",
+            "output": "input"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "start",
+          "port": "exec"
+        },
+        "target": {
+          "node": "base64_decode",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

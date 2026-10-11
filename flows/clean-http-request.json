@@ -1,0 +1,50 @@
+{
+  "edition": 1,
+  "kind": "convert",
+  "name": "Clean HTTP Request",
+  "description": "Removes unnecessary headers and replaces Cookie/Authorization/XSRF header value with placeholders.",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/manual-start",
+        "alias": "convert_start",
+        "display": {
+          "x": 0,
+          "y": -30
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": 0,
+          "y": 60
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/clean-http-request/javascript.ts\nfunction parseAndFilterHeaders(rawRequest, headersToRemove2, headersToReplace2) {\n  const lines = rawRequest.split(\"\\r\\n\");\n  let inHeaderSection = true;\n  const filteredHeaders = lines.map((line) => {\n    if (inHeaderSection && line.trim() === \"\") {\n      inHeaderSection = false;\n    }\n    if (inHeaderSection) {\n      if (line.includes(\":\")) {\n        const [headerName] = line.split(\":\");\n        const trimmedHeaderName = headerName?.trim() || \"\";\n        if (headersToRemove2.includes(trimmedHeaderName)) {\n          return \"$REMOVE_ME$\";\n        } else if (headersToReplace2[trimmedHeaderName]) {\n          return `${headerName}: ${headersToReplace2[trimmedHeaderName]}`;\n        }\n      }\n    }\n    return line;\n  }).filter((line) => line !== \"$REMOVE_ME$\");\n  const filteredRequest = filteredHeaders.join(\"\\r\\n\");\n  return filteredRequest;\n}\nvar headersToRemove = [\n  \"Sec-Fetch-Mode\",\n  \"Sec-Fetch-Site\",\n  \"Sec-Fetch-Dest\",\n  \"sec-ch-ua-platform\",\n  \"sec-ch-ua\",\n  \"sec-ch-ua-mobile\",\n  \"sec-ch-ua-full-version-list\",\n  \"sec-ch-ua-arch\",\n  \"sec-ch-ua-model\",\n  \"sec-ch-ua-platform-version\",\n  \"Connection\",\n  \"Accept-Encoding\",\n  \"Accept-Language\",\n  \"Content-Length\"\n];\nvar headersToReplace = {\n  Cookie: \"YOUR_COOKIES\",\n  Authorization: \"YOUR_AUTH_TOKEN\",\n  \"X-XSRF-TOKEN\": \"YOUR_XSRF_TOKEN\",\n  \"XSRF-TOKEN\": \"YOUR_XSRF_TOKEN\",\n  \"CSRF-TOKEN\": \"YOUR_CSRF_TOKEN\"\n};\nfunction run(input, sdk) {\n  const parsed = sdk.asString(input);\n  return parseAndFilterHeaders(parsed, headersToRemove, headersToReplace);\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "convert_start",
+            "output": "input"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "convert_start",
+          "port": "exec"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

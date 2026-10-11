@@ -1,0 +1,355 @@
+{
+  "edition": 1,
+  "kind": "passive",
+  "name": "FindSSO",
+  "description": "Highlight SSO Requests  (OAuth, OIDC, SAML)",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/if-else",
+        "alias": "if_else",
+        "display": {
+          "x": -350,
+          "y": -10
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "matches_httpql",
+            "output": "matches"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      },
+      {
+        "type": "flow/set-color",
+        "alias": "set_color",
+        "display": {
+          "x": -80,
+          "y": 170
+        },
+        "inputs": {
+          "color": {
+            "kind": "const",
+            "value": "#4a81d9"
+          }
+        }
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "if_else_1",
+        "display": {
+          "x": -170,
+          "y": -10
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "matches_httpql_1",
+            "output": "matches"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      },
+      {
+        "type": "flow/query-match",
+        "alias": "matches_httpql",
+        "display": {
+          "x": -350,
+          "y": -130
+        },
+        "inputs": {
+          "query": {
+            "kind": "const",
+            "value": "query:~\"client_id=\" OR query:~\"response_type=\""
+          }
+        }
+      },
+      {
+        "type": "flow/query-match",
+        "alias": "matches_httpql_1",
+        "display": {
+          "x": -170,
+          "y": -130
+        },
+        "inputs": {
+          "query": {
+            "kind": "const",
+            "value": "((query:~\"code=\" AND query:~\"state=\") OR path:~\"&code=\") OR query:\"code=\"*"
+          }
+        }
+      },
+      {
+        "type": "flow/query-match",
+        "alias": "matches_httpql_2",
+        "display": {
+          "x": 10,
+          "y": -130
+        },
+        "inputs": {
+          "query": {
+            "kind": "const",
+            "value": "request:~\"SAMLRequest=\" OR request:~\"SAMLResponse=\""
+          }
+        }
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "if_else_2",
+        "display": {
+          "x": 10,
+          "y": -10
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "matches_httpql_2",
+            "output": "matches"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      },
+      {
+        "type": "flow/query-match",
+        "alias": "matches_httpql_3",
+        "display": {
+          "x": 200,
+          "y": -130
+        },
+        "inputs": {
+          "query": {
+            "kind": "const",
+            "value": "response=~\"\\\"access_token\\\"\\\\s*:\\\\s*\\\"([^\\\"]+)\\\"\""
+          }
+        }
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "if_else_3",
+        "display": {
+          "x": 200,
+          "y": -10
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "matches_httpql_3",
+            "output": "matches"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      },
+      {
+        "type": "flow/in-scope",
+        "alias": "in_scope",
+        "display": {
+          "x": -60,
+          "y": -400
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "if_else_5",
+        "display": {
+          "x": -60,
+          "y": -310
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "in_scope",
+            "output": "result"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      },
+      {
+        "type": "flow/on-intercept-response",
+        "alias": "on_intercept_response",
+        "display": {
+          "x": -60,
+          "y": -520
+        },
+        "inputs": {}
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "if_else_1",
+          "port": "true"
+        },
+        "target": {
+          "node": "set_color",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "matches_httpql",
+          "port": "ok"
+        },
+        "target": {
+          "node": "if_else",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "matches_httpql_1",
+          "port": "ok"
+        },
+        "target": {
+          "node": "if_else_1",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_1",
+          "port": "false"
+        },
+        "target": {
+          "node": "matches_httpql_2",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "matches_httpql_2",
+          "port": "ok"
+        },
+        "target": {
+          "node": "if_else_2",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "matches_httpql_3",
+          "port": "ok"
+        },
+        "target": {
+          "node": "if_else_3",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_5",
+          "port": "true"
+        },
+        "target": {
+          "node": "matches_httpql",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else",
+          "port": "false"
+        },
+        "target": {
+          "node": "matches_httpql_1",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else",
+          "port": "true"
+        },
+        "target": {
+          "node": "set_color",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_2",
+          "port": "false"
+        },
+        "target": {
+          "node": "matches_httpql_3",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_3",
+          "port": "true"
+        },
+        "target": {
+          "node": "set_color",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_2",
+          "port": "true"
+        },
+        "target": {
+          "node": "set_color",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "on_intercept_response",
+          "port": "exec"
+        },
+        "target": {
+          "node": "in_scope",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "in_scope",
+          "port": "true"
+        },
+        "target": {
+          "node": "if_else_5",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

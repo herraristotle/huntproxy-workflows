@@ -1,0 +1,69 @@
+{
+  "edition": 1,
+  "kind": "passive",
+  "name": "Large Redirect Response",
+  "description": "This will flag redirect responses with a body over 1000 bytes - this can indicate sites that forgot to terminate script execution when the user fails authentication, typically leading to information disclosure.",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": 90,
+          "y": 60
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/large-redirect-response/javascript.ts\nasync function run({ request, response }, sdk) {\n  if (response) {\n    const responseCode = response.getCode();\n    const responseBodyLength = response.getBody().toRaw().length;\n    if (responseCode <= 399 && responseCode >= 300 && responseBodyLength > 1e3) {\n      const requestUrl = request.getUrl();\n      const description = `The response from the request to ${requestUrl} is a redirect response with a body larger than 1000 bytes. This may indicate a misconfiguration or a security issue.`;\n      await sdk.findings.create({\n        title: \"Large Redirect Response Detected\",\n        description,\n        request,\n        reporter: \"Large Redirect Response\",\n        dedupeKey: description\n      });\n    }\n  }\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "on_intercept_response",
+            "output": "exchange"
+          }
+        }
+      },
+      {
+        "type": "flow/in-scope",
+        "alias": "in_scope",
+        "display": {
+          "x": 100,
+          "y": -20
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/on-intercept-response",
+        "alias": "on_intercept_response",
+        "display": {
+          "x": 100,
+          "y": -120
+        },
+        "inputs": {}
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "on_intercept_response",
+          "port": "exec"
+        },
+        "target": {
+          "node": "in_scope",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "in_scope",
+          "port": "true"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

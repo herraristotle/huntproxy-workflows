@@ -1,0 +1,50 @@
+{
+  "edition": 1,
+  "kind": "passive",
+  "name": "SameSiteFinder",
+  "description": "Extracts the names of issued cookies and their SameSite attributes to help identify entry points for CSRF vulnerabilities.",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": -20,
+          "y": 150
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/samesite-finder/javascript.ts\nasync function run({ request, response }, sdk) {\n  if (!request || !response) {\n    return void 0;\n  }\n  const reqID = request.getId();\n  const host = request.getHost();\n  const headers = response.getHeaders();\n  const cookies = Object.keys(headers).filter((key) => key.toLowerCase() === \"set-cookie\").flatMap((key) => headers[key]);\n  let description = \"\";\n  if (cookies.length > 0) {\n    description += `[+] Cookies have been issued by ${host} (ID=${reqID})\n`;\n    const maxCookieKeyLength = Math.max(\n      ...cookies.map((cookie) => cookie?.split(\"=\")[0]?.trim().length ?? 0)\n    );\n    for (const cookie of cookies) {\n      let sameSitePolicy = \"Lax (attribute is not set)\";\n      const cookieKey = cookie?.split(\"=\")[0]?.trim() ?? \"\";\n      const sameSiteMatch = cookie?.match(/SameSite=(\\w+)/);\n      if (sameSiteMatch && sameSiteMatch[1]) {\n        sameSitePolicy = sameSiteMatch[1];\n      }\n      description += `Cookie name : ${cookieKey.padEnd(\n        maxCookieKeyLength\n      )}\t(SameSite = ${sameSitePolicy})\n`;\n    }\n    const finding = {\n      title: \"Cookies Issued\",\n      description: description.trim(),\n      reporter: \"SameSiteFinder\",\n      request\n    };\n    await sdk.findings.create(finding);\n  }\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "on_intercept_response",
+            "output": "exchange"
+          }
+        }
+      },
+      {
+        "type": "flow/on-intercept-response",
+        "alias": "on_intercept_response",
+        "display": {
+          "x": -30,
+          "y": -20
+        },
+        "inputs": {}
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "on_intercept_response",
+          "port": "exec"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

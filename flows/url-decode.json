@@ -1,0 +1,50 @@
+{
+  "edition": 1,
+  "kind": "convert",
+  "name": "URL Decode",
+  "description": "URL decode a string",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/manual-start",
+        "alias": "start",
+        "display": {
+          "x": 0,
+          "y": -90
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/js",
+        "alias": "url_decode",
+        "display": {
+          "x": 0,
+          "y": 70
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "function run(input) {\n  return decodeURIComponent(String(input));\n}"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "start",
+            "output": "input"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "start",
+          "port": "exec"
+        },
+        "target": {
+          "node": "url_decode",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

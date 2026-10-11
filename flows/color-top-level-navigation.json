@@ -1,0 +1,183 @@
+{
+  "edition": 1,
+  "kind": "passive",
+  "name": "Color Top-Level & IFrame Navigations",
+  "description": "Color top-level navigation and iframe navigations using Sec-Fetch-Mode and Sec-Fetch-Dest headers",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/on-intercept-response",
+        "alias": "on_intercept_request",
+        "display": {
+          "x": -110,
+          "y": -240
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/query-match",
+        "alias": "matches_httpql",
+        "display": {
+          "x": -100,
+          "y": -80
+        },
+        "inputs": {
+          "query": {
+            "kind": "const",
+            "value": "request:~\"Sec-Fetch-Mode: navigate\" AND (NOT request:~\"Sec-Fetch-Dest: iframe\")"
+          }
+        }
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "if_else",
+        "display": {
+          "x": -30,
+          "y": 50
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "matches_httpql",
+            "output": "matches"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      },
+      {
+        "type": "flow/set-color",
+        "alias": "set_color",
+        "display": {
+          "x": -20,
+          "y": 230
+        },
+        "inputs": {
+          "color": {
+            "kind": "const",
+            "value": "#D99E4A"
+          }
+        }
+      },
+      {
+        "type": "flow/query-match",
+        "alias": "matches_httpql_1",
+        "display": {
+          "x": 250,
+          "y": 100
+        },
+        "inputs": {
+          "query": {
+            "kind": "const",
+            "value": "request:~\"Sec-Fetch-Mode: navigate\" AND request:~\"Sec-Fetch-Dest: iframe\""
+          }
+        }
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "if_else_1",
+        "display": {
+          "x": 350,
+          "y": 230
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "matches_httpql_1",
+            "output": "matches"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      },
+      {
+        "type": "flow/set-color",
+        "alias": "set_color_1",
+        "display": {
+          "x": 330,
+          "y": 350
+        },
+        "inputs": {
+          "color": {
+            "kind": "const",
+            "value": "#192841"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "on_intercept_request",
+          "port": "exec"
+        },
+        "target": {
+          "node": "matches_httpql",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "matches_httpql",
+          "port": "ok"
+        },
+        "target": {
+          "node": "if_else",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else",
+          "port": "true"
+        },
+        "target": {
+          "node": "set_color",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else",
+          "port": "false"
+        },
+        "target": {
+          "node": "matches_httpql_1",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "matches_httpql_1",
+          "port": "ok"
+        },
+        "target": {
+          "node": "if_else_1",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_1",
+          "port": "true"
+        },
+        "target": {
+          "node": "set_color_1",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

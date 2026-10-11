@@ -1,0 +1,126 @@
+{
+  "edition": 1,
+  "kind": "passive",
+  "name": "Redirect To Parameter Value",
+  "description": "Finds responses which redirect to locations provided as GET parameters.",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/on-intercept-response",
+        "alias": "on_intercept_response",
+        "display": {
+          "x": -20,
+          "y": -130
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/in-scope",
+        "alias": "in_scope",
+        "display": {
+          "x": -20,
+          "y": -10
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/query-match",
+        "alias": "matches_httpql",
+        "display": {
+          "x": -30,
+          "y": 80
+        },
+        "inputs": {
+          "query": {
+            "kind": "const",
+            "value": "query=~\"(?i)(https?|ftp|file)(:\\\\/\\\\/|%3A%2F%2F)\""
+          }
+        }
+      },
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": -40,
+          "y": 180
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/redirect-to-param/javascript.ts\nasync function run({ request, response }, sdk) {\n  if (request && response) {\n    const location = response.getHeader(\"Location\");\n    if (location) {\n      sdk.console.log(`has location header`);\n      const params = request.getQuery().split(\"&\");\n      for (let i = 0; i < params.length; i++) {\n        const param_val = params[i].split(\"=\")[1];\n        if (param_val.startsWith(\"http\")) {\n          const url = decodeURIComponent(param_val);\n          const split = url.split(\"//\");\n          if (location[0].startsWith(split[0] + \"//\" + split[1])) {\n            const description = `The request to ${request.getUrl()} has redirect to same host as one of the GET params (open redirect)`;\n            await sdk.findings.create({\n              title: \"Request Redirected to Parameter Value\",\n              description,\n              request,\n              reporter: \"RedirectedToParameterValue\",\n              dedupeKey: description\n            });\n          }\n        }\n      }\n    }\n  }\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "on_intercept_response",
+            "output": "exchange"
+          }
+        }
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "matches_httpql_branch",
+        "display": {
+          "x": 120,
+          "y": 80
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "matches_httpql",
+            "output": "matches"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "on_intercept_response",
+          "port": "exec"
+        },
+        "target": {
+          "node": "in_scope",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "in_scope",
+          "port": "true"
+        },
+        "target": {
+          "node": "matches_httpql",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "matches_httpql",
+          "port": "ok"
+        },
+        "target": {
+          "node": "matches_httpql_branch",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "matches_httpql_branch",
+          "port": "true"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "edition": 1,
+  "kind": "active",
+  "name": "AI Mentor (GroqCloud)",
+  "description": "## Workflow Description\n\nThis workflow enhances your security testing in Caido by leveraging AI to analyze HTTP requests for potential vulnerabilities. It sends the raw HTTP request to an AI model via the GroqCloud API, which then performs a thorough security analysis.\n\nFor each request you will find output in Findings tab.\nIf a request is out of scope, it will be flagged with RED color and analysis will not be performed.\n\n\n## Setup Steps\n\n- Get a GroqCloud API Key:\n    - Sign up for a GroqCloud account at GroqCloud’s website to obtain an API key. This key is required to connect to the AI model.\n\n- Configure Environment Variables in Caido:\n    - Set the following variables in Caido’s settings to link the workflow to GroqCloud:\n        - GroqCloud_API_key: Enter your GroqCloud API key here.\n        - GroqCloud_model_for_AI_Mentor: Specify the AI model you want to use (e.g., a model suited for security analysis or natural language tasks). Check GroqCloud’s documentation for available models and pick one that fits your needs.\n\nRun the Workflow:\nSelect an HTTP request in Caido and trigger the workflow. The AI Mentor’s suggestions will appear in Caido’s Findings.\n\n",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/manual-start",
+        "alias": "active_start",
+        "display": {
+          "x": -90,
+          "y": -150
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": -100,
+          "y": 50
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/ai-mentor/javascript.ts\nasync function run({ request, response }, sdk) {\n  sdk.console.log(\"Starting HTTP request vulnerability analysis\");\n  const model = sdk.env.getVar(\"GroqCloud_model_for_AI_Mentor\");\n  const apiKey = sdk.env.getVar(\"GroqCloud_API_key\");\n  if (!model) {\n    sdk.console.error(\"Error: Missing model environment variable\");\n    return \"Error: Environment variable 'GroqCloud_model_for_AI_Mentor' is not set\";\n  }\n  if (!apiKey) {\n    sdk.console.error(\"Error: Missing API key environment variable\");\n    return \"Error: Environment variable 'GroqCloud_API_key' is not set\";\n  }\n  sdk.console.log(`Using model: ${model}`);\n  let prompt = `As an experienced bug bounty hunter, your task is to analyze the following HTTP request for any potential security vulnerabilities. Consider all aspects of the request, including headers, payloads, methods, and anything else that stands out. Look for issues like authentication weaknesses, injection possibilities, session management problems, or any other vulnerabilities that could be exploited. Be creative and thorough\\u2014don\\u2019t limit yourself to specific categories, and include less obvious issues that make sense for this request.\n\nProvide a detailed analysis, breaking down each potential vulnerability with:\n- A clear description of the issue.\n- Why it could be a security risk.\n- Specific tests or checks to verify it.\n\nStructure your response with headings or bullet points for clarity. Here\\u2019s the HTTP request to analyze: \n\\`\\`\\`\n${request.getRaw().toText()}\n\\`\\`\\``;\n  const spec = new RequestSpec(\"https://api.groq.com/openai/v1/chat/completions\");\n  spec.setMethod(\"POST\");\n  spec.setBody(JSON.stringify({\n    \"model\": model,\n    \"messages\": [{ \"role\": \"user\", \"content\": prompt }],\n    \"stream\": false\n  }));\n  spec.setHeader(\"Content-Type\", \"application/json\");\n  spec.setHeader(\"Authorization\", \"Bearer \" + apiKey);\n  sdk.console.log(`Sending request to ${spec.getHost()}${spec.getPath()} with method ${spec.getMethod()}`);\n  try {\n    const sentRequest = await sdk.requests.send(spec);\n    if (!sentRequest.response) {\n      sdk.console.error(\"No response received from API\");\n      return \"No response received\";\n    }\n    const statusCode = sentRequest.response.getCode();\n    sdk.console.log(`Received response with status code ${statusCode}`);\n    if (statusCode !== 200) {\n      sdk.console.error(`API request failed with status ${statusCode}`);\n      return `Error: Received status code ${statusCode}`;\n    }\n    const responseBody = sentRequest.response.getBody();\n    if (!responseBody) {\n      sdk.console.error(\"Response body is empty\");\n      return \"No response body\";\n    }\n    try {\n      const responseAsJson = responseBody.toJson();\n      sdk.console.log(\"Response JSON keys: \" + Object.keys(responseAsJson).join(\", \"));\n      if (!responseAsJson.choices || !Array.isArray(responseAsJson.choices) || responseAsJson.choices.length === 0) {\n        sdk.console.error(\"Invalid response format from API\");\n        return \"Error: Invalid response format\";\n      }\n      const cleanResponse = responseAsJson.choices[0].message.content;\n      sdk.console.log(\"Successfully extracted analysis from response\");\n      return cleanResponse;\n    } catch (e) {\n      sdk.console.error(`Error parsing JSON response: ${e.message}`);\n      return `Error parsing JSON response: ${e.message}`;\n    }\n  } catch (e) {\n    sdk.console.error(`Error sending request to API: ${e.message}`);\n    return `Error sending request: ${e.message}`;\n  }\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "active_start",
+            "output": "input"
+          }
+        }
+      },
+      {
+        "type": "flow/in-scope",
+        "alias": "in_scope",
+        "display": {
+          "x": 30,
+          "y": -40
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/set-color",
+        "alias": "set_color",
+        "display": {
+          "x": 70,
+          "y": 90
+        },
+        "inputs": {
+          "color": {
+            "kind": "const",
+            "value": "#ff0000"
+          }
+        }
+      },
+      {
+        "type": "flow/report-finding",
+        "alias": "create_finding",
+        "display": {
+          "x": -100,
+          "y": 180
+        },
+        "inputs": {
+          "description": {
+            "kind": "ref",
+            "node": "javascript",
+            "output": "output"
+          },
+          "title": {
+            "kind": "const",
+            "value": "AI Mentor suggestion"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "in_scope",
+          "port": "true"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "in_scope",
+          "port": "false"
+        },
+        "target": {
+          "node": "set_color",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "active_start",
+          "port": "exec"
+        },
+        "target": {
+          "node": "in_scope",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "javascript",
+          "port": "ok"
+        },
+        "target": {
+          "node": "create_finding",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

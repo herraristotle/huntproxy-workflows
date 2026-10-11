@@ -1,0 +1,69 @@
+{
+  "edition": 1,
+  "kind": "passive",
+  "name": "Malformed HTTP Header",
+  "description": "Finds malformed HTTP headers containing spaces within their names.",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/in-scope",
+        "alias": "in_scope",
+        "display": {
+          "x": -10,
+          "y": 0
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": -20,
+          "y": 90
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/malformed-http-header/javascript.ts\nasync function run({ request, response }, sdk) {\n  if (response) {\n    const headers = response.getHeaders();\n    for (const header in headers) {\n      if (header.indexOf(\" \") != -1) {\n        const requestUrl = request.getUrl();\n        const description = `The response from the request to ${requestUrl} has a header that contains a space (${header}). This may indicate a misconfiguration or a security issue.`;\n        await sdk.findings.create({\n          title: \"Header with a space Detected\",\n          description,\n          request,\n          reporter: \"MalformedHttpHeader\",\n          dedupeKey: description\n        });\n        break;\n      }\n    }\n  }\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "on_intercept_response",
+            "output": "exchange"
+          }
+        }
+      },
+      {
+        "type": "flow/on-intercept-response",
+        "alias": "on_intercept_response",
+        "display": {
+          "x": -10,
+          "y": -110
+        },
+        "inputs": {}
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "on_intercept_response",
+          "port": "exec"
+        },
+        "target": {
+          "node": "in_scope",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "in_scope",
+          "port": "true"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

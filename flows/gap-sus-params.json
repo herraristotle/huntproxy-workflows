@@ -1,0 +1,69 @@
+{
+  "edition": 1,
+  "kind": "passive",
+  "name": "GAP \"Sus\" Params 🤘",
+  "description": "Flag requests that have \"sus\" parameters (Based on GAP list by @jhaddix, @G0LDEN_infosec, and @ryancbarnett)",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/on-intercept-response",
+        "alias": "on_intercept_request",
+        "display": {
+          "x": 60,
+          "y": -140
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/in-scope",
+        "alias": "in_scope",
+        "display": {
+          "x": 60,
+          "y": -40
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": 60,
+          "y": 40
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/gap-sus-params/javascript.ts\nasync function run(input, sdk) {\n  const { request: e } = input;\n  if (e === void 0) return void 0;\n  const PARAM_GROUPS = {\n    CMDI: [\n      \"execute\",\n      \"dir\",\n      \"daemon\",\n      \"cli\",\n      \"log\",\n      \"cmd\",\n      \"download\",\n      \"ip\",\n      \"upload\",\n      \"message\",\n      \"input_file\",\n      \"format\",\n      \"expression\",\n      \"data\",\n      \"bsh\",\n      \"bash\",\n      \"shell\",\n      \"command\",\n      \"range\",\n      \"sort\",\n      \"host\",\n      \"exec\",\n      \"code\"\n    ],\n    DEBUG: [\n      \"test\",\n      \"reset\",\n      \"config\",\n      \"shell\",\n      \"admin\",\n      \"exec\",\n      \"load\",\n      \"cfg\",\n      \"dbg\",\n      \"edit\",\n      \"root\",\n      \"create\",\n      \"access\",\n      \"disable\",\n      \"alter\",\n      \"make\",\n      \"grant\",\n      \"adm\",\n      \"toggle\",\n      \"execute\",\n      \"clone\",\n      \"delete\",\n      \"enable\",\n      \"rename\",\n      \"debug\",\n      \"modify\",\n      \"stacktrace\"\n    ],\n    FILEINC: [\n      \"root\",\n      \"directory\",\n      \"path\",\n      \"style\",\n      \"folder\",\n      \"default-language\",\n      \"url\",\n      \"platform\",\n      \"textdomain\",\n      \"document\",\n      \"template\",\n      \"pg\",\n      \"php_path\",\n      \"doc\",\n      \"type\",\n      \"lang\",\n      \"token\",\n      \"name\",\n      \"pdf\",\n      \"file\",\n      \"etc\",\n      \"api\",\n      \"app\",\n      \"resource-type\",\n      \"controller\",\n      \"filename\",\n      \"page\",\n      \"f\",\n      \"view\",\n      \"input_file\"\n    ],\n    IDOR: [\n      \"count\",\n      \"key\",\n      \"user\",\n      \"id\",\n      \"extended_data\",\n      \"uid2\",\n      \"group\",\n      \"team_id\",\n      \"data-id\",\n      \"no\",\n      \"username\",\n      \"email\",\n      \"account\",\n      \"doc\",\n      \"uuid\",\n      \"profile\",\n      \"number\",\n      \"user_id\",\n      \"edit\",\n      \"report\",\n      \"order\"\n    ],\n    OPENREDIRECT: [\n      \"u\",\n      \"redirect_uri\",\n      \"failed\",\n      \"r\",\n      \"referer\",\n      \"return_url\",\n      \"redirect_url\",\n      \"prejoin_data\",\n      \"continue\",\n      \"redir\",\n      \"return_to\",\n      \"origin\",\n      \"redirect_to\",\n      \"next\"\n    ],\n    SQLI: [\n      \"process\",\n      \"string\",\n      \"id\",\n      \"referer\",\n      \"password\",\n      \"pwd\",\n      \"field\",\n      \"view\",\n      \"sleep\",\n      \"column\",\n      \"log\",\n      \"token\",\n      \"sel\",\n      \"select\",\n      \"sort\",\n      \"from\",\n      \"search\",\n      \"update\",\n      \"pub_group_id\",\n      \"row\",\n      \"results\",\n      \"role\",\n      \"table\",\n      \"multi_layer_map_list\",\n      \"order\",\n      \"filter\",\n      \"params\",\n      \"user\",\n      \"fetch\",\n      \"limit\",\n      \"keyword\",\n      \"email\",\n      \"query\",\n      \"c\",\n      \"name\",\n      \"where\",\n      \"number\",\n      \"phone_number\",\n      \"delete\",\n      \"report\",\n      \"q\",\n      \"sql\"\n    ],\n    SSRF: [\n      \"sector_identifier_uri\",\n      \"request_uris\",\n      \"logo_uri\",\n      \"jwks_uri\",\n      \"start\",\n      \"path\",\n      \"domain\",\n      \"source\",\n      \"url\",\n      \"site\",\n      \"view\",\n      \"template\",\n      \"page\",\n      \"show\",\n      \"val\",\n      \"dest\",\n      \"metadata\",\n      \"out\",\n      \"feed\",\n      \"navigation\",\n      \"image_host\",\n      \"uri\",\n      \"next\",\n      \"continue\",\n      \"host\",\n      \"window\",\n      \"dir\",\n      \"reference\",\n      \"filename\",\n      \"html\",\n      \"to\",\n      \"return\",\n      \"open\",\n      \"port\",\n      \"stop\",\n      \"validate\",\n      \"resturl\",\n      \"callback\",\n      \"name\",\n      \"data\",\n      \"ip\",\n      \"redirect\",\n      \"target\",\n      \"referer\"\n    ],\n    SSTI: [\n      \"preview\",\n      \"activity\",\n      \"id\",\n      \"name\",\n      \"content\",\n      \"view\",\n      \"template\",\n      \"redirect\"\n    ],\n    XSS: [\n      \"path\",\n      \"admin\",\n      \"class\",\n      \"atb\",\n      \"redirect_uri\",\n      \"other\",\n      \"utm_source\",\n      \"currency\",\n      \"dir\",\n      \"title\",\n      \"endpoint\",\n      \"return_url\",\n      \"users\",\n      \"cookie\",\n      \"state\",\n      \"callback\",\n      \"militarybranch\",\n      \"e\",\n      \"referer\",\n      \"password\",\n      \"author\",\n      \"body\",\n      \"status\",\n      \"utm_campaign\",\n      \"value\",\n      \"text\",\n      \"search\",\n      \"flaw\",\n      \"vote\",\n      \"pathname\",\n      \"params\",\n      \"user\",\n      \"t\",\n      \"utm_medium\",\n      \"q\",\n      \"email\",\n      \"what\",\n      \"file\",\n      \"data-original\",\n      \"description\",\n      \"subject\",\n      \"action\",\n      \"u\",\n      \"nickname\",\n      \"color\",\n      \"language_id\",\n      \"auth\",\n      \"samlresponse\",\n      \"return\",\n      \"readyfunction\",\n      \"where\",\n      \"tags\",\n      \"cvo_sid1\",\n      \"target\",\n      \"format\",\n      \"back\",\n      \"term\",\n      \"r\",\n      \"id\",\n      \"url\",\n      \"view\",\n      \"username\",\n      \"sequel\",\n      \"type\",\n      \"city\",\n      \"src\",\n      \"p\",\n      \"label\",\n      \"ctx\",\n      \"style\",\n      \"html\",\n      \"ad_type\",\n      \"s\",\n      \"issues\",\n      \"query\",\n      \"c\",\n      \"shop\",\n      \"redirect\",\n      \"page\",\n      \"prefv1\",\n      \"destination\",\n      \"mode\",\n      \"data\",\n      \"error\",\n      \"editor\",\n      \"wysiwyg\",\n      \"widget\",\n      \"msg\"\n    ],\n    MASSASSIGNMENT: [\n      \"user\",\n      \"profile\",\n      \"role\",\n      \"settings\",\n      \"data\",\n      \"attributes\",\n      \"post\",\n      \"comment\",\n      \"order\",\n      \"product\",\n      \"form_fields\",\n      \"request\"\n    ]\n  };\n  const GROUP_DESCRIPTIONS = {\n    CMDI: \"Command Injection\",\n    DEBUG: \"Debug or Admin Parameters\",\n    FILEINC: \"File Inclusion\",\n    IDOR: \"Insecure Direct Object Reference (IDOR)\",\n    OPENREDIRECT: \"Open Redirect\",\n    SQLI: \"SQL Injection\",\n    SSRF: \"Server-Side Request Forgery (SSRF)\",\n    SSTI: \"Server-Side Template Injection (SSTI)\",\n    XSS: \"Cross-Site Scripting (XSS)\",\n    MASSASSIGNMENT: \"Mass Assignment / Overposting\"\n  };\n  const PARAM_LOOKUP = /* @__PURE__ */ new Map();\n  for (const [cat, list] of Object.entries(PARAM_GROUPS)) {\n    for (const p of list) PARAM_LOOKUP.set(p.toLowerCase(), cat);\n  }\n  const found = {};\n  const record = (paramName, location) => {\n    const lower = paramName.toLowerCase();\n    const cat = PARAM_LOOKUP.get(lower);\n    if (cat === void 0) return;\n    if (found[cat] === void 0) found[cat] = /* @__PURE__ */ new Map();\n    if (!found[cat].has(lower)) found[cat].set(lower, /* @__PURE__ */ new Set());\n    found[cat].get(lower)?.add(location);\n  };\n  try {\n    const usp = new URLSearchParams(e.getQuery() || \"\");\n    for (const key of usp.keys()) if (key) record(key, \"query\");\n  } catch (_) {\n  }\n  try {\n    try {\n      const body = e.getBody();\n      if (body !== void 0) {\n        const jsonBody = body.toJson();\n        if (jsonBody && typeof jsonBody === \"object\") {\n          for (const k in jsonBody) record(k, \"body.json\");\n        }\n      }\n    } catch {\n      const body = e.getBody();\n      if (body !== void 0) {\n        const txt = body.toText() || \"\";\n        if (txt.includes(\"=\")) {\n          const usp2 = new URLSearchParams(txt);\n          for (const key of usp2.keys()) record(key, \"body.form\");\n        }\n      }\n    }\n  } catch (_) {\n  }\n  const host = e.getHost ? e.getHost() : \"unknown\";\n  const path = e.getPath ? e.getPath() : \"\";\n  for (const [cat, paramMap] of Object.entries(found)) {\n    const friendly = GROUP_DESCRIPTIONS[cat] || cat;\n    const params = Array.from(paramMap.keys()).sort();\n    const dedupe = `${host}|${path}|${cat}|${params.join(\",\")}`;\n    let description = `The request to **${host}${path}** contains parameters commonly associated with **${friendly}** issues.\n\n`;\n    description += `**Matched Parameters:**\n`;\n    for (const [p, locs] of paramMap.entries()) {\n      description += `- ${p} (locations: ${Array.from(locs).join(\", \")})\n`;\n    }\n    description += `\nSource list: GAP \"Sus\" Parameters (by @jhaddix, @G0LDEN_infosec, and @ryancbarnett) \\u{1F918}\n`;\n    await sdk.findings.create({\n      title: `GAP \"Sus\" Params [${cat}]: ${params.join(\", \")}`,\n      description,\n      request: e,\n      reporter: 'GAP \"Sus\" Params \\u{1F918}',\n      dedupeKey: dedupe\n    });\n  }\n  return void 0;\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "on_intercept_request",
+            "output": "exchange"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "on_intercept_request",
+          "port": "exec"
+        },
+        "target": {
+          "node": "in_scope",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "in_scope",
+          "port": "true"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

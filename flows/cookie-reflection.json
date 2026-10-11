@@ -1,0 +1,126 @@
+{
+  "edition": 1,
+  "kind": "passive",
+  "name": "Cookie Reflection",
+  "description": "Detects if the value of a cookie is reflected in the page response",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/on-intercept-response",
+        "alias": "on_intercept_response",
+        "display": {
+          "x": 20,
+          "y": -120
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/in-scope",
+        "alias": "in_scope",
+        "display": {
+          "x": 20,
+          "y": -20
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/query-match",
+        "alias": "matches_httpql",
+        "display": {
+          "x": 10,
+          "y": 60
+        },
+        "inputs": {
+          "query": {
+            "kind": "const",
+            "value": "request:~\"Cookie:\""
+          }
+        }
+      },
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": 0,
+          "y": 160
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/cookie-reflection/javascript.ts\nasync function run({ request, response }, sdk) {\n  if (request && response) {\n    const cookie_header = request.getHeader(\"Cookie\");\n    if (cookie_header) {\n      const split = cookie_header[0].split(\";\");\n      for (const cookie of split) {\n        const split2 = cookie.split(\"=\");\n        const cookie_name = split2[0];\n        const cookie_val = split2[1];\n        if (cookie_val.length < 6) {\n          continue;\n        }\n        if (response.getBody().toText().indexOf(cookie_val) != -1) {\n          await sdk.findings.create({\n            title: `Value \"${cookie_val}\" from cookie \"${cookie_name}\" is reflected`,\n            description: `The response from ${request.getUrl()} contains the value \"${cookie_val}\" which is also the value of the cookie \"${cookie_name}\"`,\n            request,\n            reporter: \"CookieValueReflectedInResponse\",\n            dedupeKey: `cookie_reflect_${request.getHost()}${request.getPath()()}_${cookie_name}_${cookie_val}`\n          });\n        }\n      }\n    }\n  }\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "on_intercept_response",
+            "output": "exchange"
+          }
+        }
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "matches_httpql_branch",
+        "display": {
+          "x": 160,
+          "y": 60
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "matches_httpql",
+            "output": "matches"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "in_scope",
+          "port": "true"
+        },
+        "target": {
+          "node": "matches_httpql",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "on_intercept_response",
+          "port": "exec"
+        },
+        "target": {
+          "node": "in_scope",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "matches_httpql",
+          "port": "ok"
+        },
+        "target": {
+          "node": "matches_httpql_branch",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "matches_httpql_branch",
+          "port": "true"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

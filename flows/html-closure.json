@@ -1,0 +1,69 @@
+{
+  "edition": 1,
+  "kind": "passive",
+  "name": "HTML Closure",
+  "description": "Catching responses containing multiple closing HTML tags.",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": 10,
+          "y": 100
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/html-closure/javascript.ts\nasync function run({ request, response }, sdk) {\n  if (response) {\n    const body = response.getBody().toText();\n    if (response.getHeader(\"Content-Type\")[0].startsWith(\"text/html\")) {\n      const count = (body.match(/<\\/html>/g) || []).length;\n      if (count > 1) {\n        const description = `Found ${count} </html> tags in the response body`;\n        await sdk.findings.create({\n          title: \"More than one </html> tag\",\n          description,\n          request,\n          reporter: \"HTML Closure\",\n          dedupeKey: description\n        });\n      }\n    }\n  }\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "on_intercept_response",
+            "output": "exchange"
+          }
+        }
+      },
+      {
+        "type": "flow/on-intercept-response",
+        "alias": "on_intercept_response",
+        "display": {
+          "x": 20,
+          "y": -90
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/in-scope",
+        "alias": "in_scope",
+        "display": {
+          "x": 20,
+          "y": 10
+        },
+        "inputs": {}
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "on_intercept_response",
+          "port": "exec"
+        },
+        "target": {
+          "node": "in_scope",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "in_scope",
+          "port": "true"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

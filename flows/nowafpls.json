@@ -1,0 +1,50 @@
+{
+  "edition": 1,
+  "kind": "convert",
+  "name": "nowafpls - 8KB",
+  "description": "Bypass WAFs with 8KB Padding.",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/manual-start",
+        "alias": "convert_start",
+        "display": {
+          "x": -210,
+          "y": -210
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": -70,
+          "y": -50
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/nowafpls/javascript.ts\nfunction run(input, sdk) {\n  let newReq = sdk.asString(input);\n  const paddingAmount = 8e3;\n  let index = newReq.indexOf(\"\\r\\n\\r\\n\") + 4;\n  if (/content-type: ?application\\/json/i.test(newReq)) {\n    index = index + 1;\n    const newReqBefore = newReq.substring(0, index);\n    const newReqAfter = newReq.substring(index);\n    newReq = newReqBefore + '\"a\":\"' + \"a\".repeat(paddingAmount) + '\",' + newReqAfter;\n  } else if (/content-type: ?application\\/x-www-form-urlencoded/i.test(newReq)) {\n    const newReqBefore = newReq.substring(0, index);\n    const newReqAfter = newReq.substring(index);\n    newReq = newReqBefore + \"a=\" + \"a\".repeat(paddingAmount) + \"&\" + newReqAfter;\n  } else if (/content-type: ?application\\/xml/i.test(newReq)) {\n    const newReqBefore = newReq.substring(0, index);\n    const newReqAfter = newReq.substring(index);\n    newReq = newReqBefore + \"<!--\" + \"a\".repeat(paddingAmount) + \"-->\" + newReqAfter;\n  }\n  return newReq ? newReq : \"\\r\\n\\r\\nIncorrect Usage: Press CTRL-Z, then select the whole request and try again...\\r\\n\\r\\n\";\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "convert_start",
+            "output": "input"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "convert_start",
+          "port": "exec"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

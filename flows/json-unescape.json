@@ -1,0 +1,50 @@
+{
+  "edition": 1,
+  "kind": "convert",
+  "name": "JSON Unescape",
+  "description": "Workflow to JSON unescape text",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/manual-start",
+        "alias": "convert_start",
+        "display": {
+          "x": 0,
+          "y": 0
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": 0,
+          "y": 100
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/json-unescape/javascript.ts\nfunction run(input, sdk) {\n  let parsed = sdk.asString(input);\n  if (!parsed.startsWith('\"')) {\n    parsed = '\"' + parsed;\n  }\n  if (!parsed.endsWith('\"')) {\n    parsed += '\"';\n  }\n  return JSON.parse(parsed);\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "convert_start",
+            "output": "input"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "convert_start",
+          "port": "exec"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

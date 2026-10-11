@@ -1,0 +1,50 @@
+{
+  "edition": 1,
+  "kind": "convert",
+  "name": "Add Slashes",
+  "description": "Workflow that adds backslashes before special characters in strings to ensure correct interpretation in specific contexts.",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/manual-start",
+        "alias": "convert_start",
+        "display": {
+          "x": 0,
+          "y": -180
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": 0,
+          "y": -40
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/add-slashes/javascript.ts\nfunction addSlashes(str) {\n  return str.replace(/([\\\\'\\\"])/g, \"\\\\$1\");\n}\nfunction run(input, sdk) {\n  const parsed = sdk.asString(input);\n  return addSlashes(parsed);\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "convert_start",
+            "output": "input"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "convert_start",
+          "port": "exec"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

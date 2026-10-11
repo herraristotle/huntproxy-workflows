@@ -1,0 +1,69 @@
+{
+  "edition": 1,
+  "kind": "passive",
+  "name": "JSON Response With Wrong Content-Type",
+  "description": "Finds JSON responses with wrong Content-Type",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/on-intercept-response",
+        "alias": "on_intercept_response",
+        "display": {
+          "x": 30,
+          "y": -20
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/in-scope",
+        "alias": "in_scope",
+        "display": {
+          "x": 30,
+          "y": 70
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": 20,
+          "y": 150
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/json-with-wrong-content-type/javascript.ts\nasync function run({ request, response }, sdk) {\n  if (response) {\n    const body = response.getBody().toText().trimLeft();\n    const contentTypeHeader = response.getHeader(\"Content-Type\");\n    if (body.startsWith(\"{\") || body.startsWith(\"[\")) {\n      if (!contentTypeHeader[0].match(/^application\\/(\\w*\\+)?json/)) {\n        if (!contentTypeHeader[0].match(/^text\\/(javascript|css)/)) {\n          let description = `The content of response from ${request.getHost()}${request.getPath()} is probably JSON but the content type is not application/json`;\n          await sdk.findings.create({\n            title: \"JSON Response Without JSON Content-Type\",\n            description,\n            request,\n            reporter: \"JSON Response Without JSON Content-Type\",\n            dedupeKey: description\n          });\n        }\n      }\n    }\n  }\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "on_intercept_response",
+            "output": "exchange"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "on_intercept_response",
+          "port": "exec"
+        },
+        "target": {
+          "node": "in_scope",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "in_scope",
+          "port": "true"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "edition": 1,
+  "kind": "convert",
+  "name": "Unicode Encode",
+  "description": "Workflow to encode unicode",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/manual-start",
+        "alias": "convert_start",
+        "display": {
+          "x": 0,
+          "y": 0
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": 0,
+          "y": 90
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/unicode-encode/javascript.ts\nfunction run(input, sdk) {\n  const parsed = sdk.asString(input);\n  let result = \"\";\n  for (let i = 0; i < parsed.length; i++) {\n    result += \"\\\\u\" + (\"0000\" + parsed.charCodeAt(i).toString(16)).slice(-4);\n  }\n  sdk.console.log(parsed);\n  return result;\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "convert_start",
+            "output": "input"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "convert_start",
+          "port": "exec"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

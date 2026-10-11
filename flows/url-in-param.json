@@ -1,0 +1,149 @@
+{
+  "edition": 1,
+  "kind": "passive",
+  "name": "Url In Parameter",
+  "description": "Finds requests containing URLs.",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/on-intercept-response",
+        "alias": "on_intercept_request",
+        "display": {
+          "x": -130,
+          "y": -370
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/query-match",
+        "alias": "matches_httpql",
+        "display": {
+          "x": -140,
+          "y": -210
+        },
+        "inputs": {
+          "query": {
+            "kind": "const",
+            "value": "query=~\"(?i)(https?|ftp|file)(:\\\\/\\\\/|%3A%2F%2F)\""
+          }
+        }
+      },
+      {
+        "type": "flow/in-scope",
+        "alias": "in_scope",
+        "display": {
+          "x": -130,
+          "y": -280
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/report-finding",
+        "alias": "create_finding",
+        "display": {
+          "x": -150,
+          "y": -30
+        },
+        "inputs": {
+          "description": {
+            "kind": "const",
+            "value": "Request contained a url in parameter"
+          },
+          "title": {
+            "kind": "const",
+            "value": "Url In Parameter"
+          }
+        }
+      },
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": -150,
+          "y": -120
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/url-in-param/javascript.ts\nfunction run({ request }) {\n  if (request) {\n    return `url_in_param_${request.getHost()}${request.getPath()}`;\n  }\n}\n"
+          }
+        }
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "matches_httpql_branch",
+        "display": {
+          "x": 10,
+          "y": -210
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "matches_httpql",
+            "output": "matches"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "on_intercept_request",
+          "port": "exec"
+        },
+        "target": {
+          "node": "in_scope",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "in_scope",
+          "port": "true"
+        },
+        "target": {
+          "node": "matches_httpql",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "javascript",
+          "port": "ok"
+        },
+        "target": {
+          "node": "create_finding",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "matches_httpql",
+          "port": "ok"
+        },
+        "target": {
+          "node": "matches_httpql_branch",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "matches_httpql_branch",
+          "port": "true"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

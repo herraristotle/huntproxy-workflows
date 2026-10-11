@@ -1,0 +1,69 @@
+{
+  "edition": 1,
+  "kind": "passive",
+  "name": "Multiple Server Headers",
+  "description": "Detects if server returns different server header at different paths",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/in-scope",
+        "alias": "in_scope",
+        "display": {
+          "x": -110,
+          "y": -20
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": -120,
+          "y": 70
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/multiple-server-headers/javascript.ts\nasync function run({ request, response }, sdk) {\n  if (request && response) {\n    const prefix = \"ServerMulti_IgnoreThisFinding_\";\n    const host = request.getHost();\n    const hostdedupekey = `server_multi_${host}`;\n    const serverheaders = response.getHeader(\"server\");\n    if (!await sdk.findings.exists(hostdedupekey)) {\n      await sdk.findings.create({\n        title: \"ServerIgnore\",\n        description: `${prefix}${serverheaders[0]}`,\n        request,\n        reporter: \"ServerMulti_IgnoreThisFinding\",\n        dedupeKey: hostdedupekey\n      });\n      return;\n    }\n    const existingFinding = await sdk.findings.get(hostdedupekey);\n    const seenServerValue = existingFinding.getDescription().substring(prefix.length);\n    for (const server of serverheaders) {\n      if (server != seenServerValue) {\n        await sdk.findings.create({\n          title: `New Server Header: ${server}`,\n          description: `Webserver ${host} returned a new server header: ${server}.`,\n          request,\n          reporter: \"ServerMulti\",\n          dedupeKey: `server_multi_${host}_${server}`\n        });\n        if (seenServerValue != \"undefined\") {\n          await sdk.findings.create({\n            title: `New Server Header: ${seenServerValue}`,\n            description: `Webserver ${host} returned a new server header: ${seenServerValue}.`,\n            request,\n            reporter: \"ServerMulti\",\n            dedupeKey: `server_multi_${host}_${seenServerValue}`\n          });\n        }\n      }\n    }\n  }\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "on_intercept_response",
+            "output": "exchange"
+          }
+        }
+      },
+      {
+        "type": "flow/on-intercept-response",
+        "alias": "on_intercept_response",
+        "display": {
+          "x": -110,
+          "y": -150
+        },
+        "inputs": {}
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "on_intercept_response",
+          "port": "exec"
+        },
+        "target": {
+          "node": "in_scope",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "in_scope",
+          "port": "true"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

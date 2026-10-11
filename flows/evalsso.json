@@ -1,0 +1,328 @@
+{
+  "edition": 1,
+  "kind": "passive",
+  "name": "EvalSSO",
+  "description": "Create Findings based on OAuth/OIDC SSO Requests",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/query-match",
+        "alias": "matches_httpql_4",
+        "display": {
+          "x": 660,
+          "y": -150
+        },
+        "inputs": {
+          "query": {
+            "kind": "const",
+            "value": "(query:~\"&code=\" OR query:\"code=\"*) AND (NOT query:~\"state=\")"
+          }
+        }
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "if_else_4",
+        "display": {
+          "x": 660,
+          "y": -10
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "matches_httpql_4",
+            "output": "matches"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      },
+      {
+        "type": "flow/report-finding",
+        "alias": "create_finding",
+        "display": {
+          "x": 660,
+          "y": 120
+        },
+        "inputs": {
+          "description": {
+            "kind": "const",
+            "value": "A possible CSRF was detected: The request looks like an OAuth/OIDC Auth. Reqponse but does not utilize a \"state\".\n\nPlease note that there could be other countermeasures against CSRF such as PKCE in place.\n\nFurther references: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.7"
+          },
+          "title": {
+            "kind": "const",
+            "value": "Potential CSRF Detected: OAuth Implicit Grant Used"
+          }
+        }
+      },
+      {
+        "type": "flow/query-match",
+        "alias": "matches_httpql",
+        "display": {
+          "x": 890,
+          "y": -150
+        },
+        "inputs": {
+          "query": {
+            "kind": "const",
+            "value": "query:~\"response_type=token\" OR query:~\"response_type=code+token\""
+          }
+        }
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "if_else",
+        "display": {
+          "x": 890,
+          "y": -10
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "matches_httpql",
+            "output": "matches"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      },
+      {
+        "type": "flow/report-finding",
+        "alias": "create_finding_1",
+        "display": {
+          "x": 890,
+          "y": 130
+        },
+        "inputs": {
+          "description": {
+            "kind": "const",
+            "value": "Deprecated OAuth Implicit Grant detected.\n\nhttps://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#name-implicit-grant"
+          },
+          "title": {
+            "kind": "const",
+            "value": "OAuth Implicit Flow Used"
+          }
+        }
+      },
+      {
+        "type": "flow/query-match",
+        "alias": "matches_httpql_1",
+        "display": {
+          "x": 1100,
+          "y": -150
+        },
+        "inputs": {
+          "query": {
+            "kind": "const",
+            "value": "request:~\"response_type=password\""
+          }
+        }
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "if_else_1",
+        "display": {
+          "x": 1100,
+          "y": 0
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "matches_httpql_1",
+            "output": "matches"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      },
+      {
+        "type": "flow/report-finding",
+        "alias": "create_finding_2",
+        "display": {
+          "x": 1100,
+          "y": 130
+        },
+        "inputs": {
+          "description": {
+            "kind": "const",
+            "value": "The Resource Owner Passwort Credentials Grant is depracted.\n\nhttps://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#name-resource-owner-password-cre"
+          },
+          "title": {
+            "kind": "const",
+            "value": "OAuth Resource Owner Passwort Credentials Grant Used"
+          }
+        }
+      },
+      {
+        "type": "flow/in-scope",
+        "alias": "in_scope",
+        "display": {
+          "x": 890,
+          "y": -390
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "if_else_2",
+        "display": {
+          "x": 890,
+          "y": -280
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "in_scope",
+            "output": "result"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      },
+      {
+        "type": "flow/on-intercept-response",
+        "alias": "on_intercept_response",
+        "display": {
+          "x": 890,
+          "y": -520
+        },
+        "inputs": {}
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "matches_httpql_4",
+          "port": "ok"
+        },
+        "target": {
+          "node": "if_else_4",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "matches_httpql",
+          "port": "ok"
+        },
+        "target": {
+          "node": "if_else",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else",
+          "port": "false"
+        },
+        "target": {
+          "node": "matches_httpql_1",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "matches_httpql_1",
+          "port": "ok"
+        },
+        "target": {
+          "node": "if_else_1",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else",
+          "port": "true"
+        },
+        "target": {
+          "node": "create_finding_1",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "in_scope",
+          "port": "true"
+        },
+        "target": {
+          "node": "if_else_2",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_4",
+          "port": "false"
+        },
+        "target": {
+          "node": "matches_httpql",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_4",
+          "port": "true"
+        },
+        "target": {
+          "node": "create_finding",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_1",
+          "port": "true"
+        },
+        "target": {
+          "node": "create_finding_2",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "if_else_2",
+          "port": "true"
+        },
+        "target": {
+          "node": "matches_httpql_4",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "on_intercept_response",
+          "port": "exec"
+        },
+        "target": {
+          "node": "in_scope",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,154 @@
+{
+  "edition": 1,
+  "kind": "passive",
+  "name": "Detect ASPX Viewstate",
+  "description": "Host has a viewstate",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/on-intercept-response",
+        "alias": "on_intercept_response",
+        "display": {
+          "x": 10,
+          "y": -110
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/in-scope",
+        "alias": "in_scope",
+        "display": {
+          "x": 10,
+          "y": -10
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/query-match",
+        "alias": "matches_httpql",
+        "display": {
+          "x": 0,
+          "y": 80
+        },
+        "inputs": {
+          "query": {
+            "kind": "const",
+            "value": "response:~\"__VIEWSTATE\""
+          }
+        }
+      },
+      {
+        "type": "flow/report-finding",
+        "alias": "create_finding",
+        "display": {
+          "x": -10,
+          "y": 260
+        },
+        "inputs": {
+          "description": {
+            "kind": "const",
+            "value": "Detected Viewstate"
+          },
+          "title": {
+            "kind": "const",
+            "value": "Viewstate Detected"
+          }
+        }
+      },
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": -10,
+          "y": 180
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/detect-viewstate/javascript.ts\nasync function run({ request, response }, sdk) {\n  if (request) {\n    return `viewstate_detect_${request.getHost()}`;\n  }\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "on_intercept_response",
+            "output": "exchange"
+          }
+        }
+      },
+      {
+        "type": "flow/if-else",
+        "alias": "matches_httpql_branch",
+        "display": {
+          "x": 150,
+          "y": 80
+        },
+        "inputs": {
+          "left": {
+            "kind": "ref",
+            "node": "matches_httpql",
+            "output": "matches"
+          },
+          "op": {
+            "kind": "const",
+            "value": "eq"
+          },
+          "right": {
+            "kind": "const",
+            "value": true
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "on_intercept_response",
+          "port": "exec"
+        },
+        "target": {
+          "node": "in_scope",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "in_scope",
+          "port": "true"
+        },
+        "target": {
+          "node": "matches_httpql",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "javascript",
+          "port": "ok"
+        },
+        "target": {
+          "node": "create_finding",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "matches_httpql",
+          "port": "ok"
+        },
+        "target": {
+          "node": "matches_httpql_branch",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "matches_httpql_branch",
+          "port": "true"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

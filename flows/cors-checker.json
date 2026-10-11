@@ -1,0 +1,50 @@
+{
+  "edition": 1,
+  "kind": "active",
+  "name": "CORS Checker",
+  "description": "Performs checks for misconfigured CORS",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/manual-start",
+        "alias": "active_start",
+        "display": {
+          "x": 10,
+          "y": 30
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": 10,
+          "y": 140
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/cors-checker/javascript.ts\nasync function run({ request, response }, sdk) {\n  if (request && response) {\n    let payloads1 = {\n      \"null origin\": \"null\",\n      \"aribtrary https origin\": \"https://evil.com\",\n      \"aribtrary http origin\": \"http://evil.com\"\n    };\n    let foundWorking = false;\n    for (const [k, v] of Object.entries(payloads1)) {\n      let result = await test_origin(sdk, request, v);\n      if (result) {\n        foundWorking = true;\n        await createCorsFinding(sdk, result.request, v, result.allowsCreds, `CORS Misconfig ${request.getHost()}${request.getPath()} - ${k}: ${v}`);\n      }\n    }\n    if (foundWorking) {\n      sdk.console.log(\"CORS: Skipping further tests\");\n      return;\n    }\n    let reqOriginHeaders = request.getHeader(\"origin\");\n    let domain = request.getHost();\n    if (reqOriginHeaders.length > 0) {\n      let reqOrigin = reqOriginHeaders[0];\n      domain = reqOrigin.split(\"://\")[1];\n    }\n    let payloads2 = {\n      \"prefixed origin domain\": \"https://xyz\" + extractDomain(domain),\n      // https://xyzexample.com\n      \"suffixed origin domain\": \"https://\" + domain + \".evil.com\",\n      // https://example.com.evil.com\n      \"insecure origin protocol\": \"http://\" + domain,\n      // http://example.com\n      \"using localhost subdomain\": \"https://localhost.evil.com\",\n      // https://localhost.evil.com\n      \"using localhost subdomain http\": \"http://localhost.evil.com\",\n      // http://localhost.evil.com\n      \"using 127.0.0.1 subdomain\": \"https://127.0.0.1.evil.com\",\n      // https://127.0.0.1.evil.com\n      \"using 127.0.0.1 subdomain http\": \"http://127.0.0.1.evil.com\",\n      // http://127.0.0.1.evil.com\n      \"arbitrary subdomain\": \"http://xyz.\" + domain,\n      // http://xyz.example.com    \n      \"substring match origin (drop last char)\": \"https://\" + domain.slice(0, -1),\n      // https://example.co\n      \"unescaped regex\": \"https://\" + domain.replace(\".\", \"x\"),\n      // https://examplexcom (preferably smth like https://wwwxexample.com)\n      // Source: https://corben.io/blog/18-6-16-advanced-cors-techniques\n      \"underscore separated origin\": \"https://\" + domain + \"_.evil.com\",\n      // https://example.com _.evil.com     \n      \"plus separated origin\": \"https://\" + domain + \".+.evil.com\",\n      // https://example.com+.evil.com   \n      \"left curly brace separated origin\": \"https://\" + domain + \".{.evil.com\",\n      // https://example.com.{.evil.com\n      \"backtick separated origin\": \"https://\" + domain + \"`.evil.com\"\n      // https://example.com`.evil.com\n    };\n    for (const [k, v] of Object.entries(payloads2)) {\n      let result = await test_origin(sdk, request, v);\n      if (result) {\n        await createCorsFinding(sdk, result.request, v, result.allowsCreds, `CORS Misconfig ${request.getHost()}${request.getPath()} - ${k}: ${v}`);\n      }\n    }\n    let unsafeOriginDomains = [\n      \"https://whatever.github.io\",\n      \"https://jsbin.com\",\n      \"https://codepen.io\",\n      \"https://jsfiddle.net\",\n      \"https://repl.it\",\n      \"https://random.azurewebsites.net\",\n      \"https://random.s3.amazonaws.com\",\n      \"https://random.herokuapp.com\"\n    ];\n    for (const unsafeOrigin of unsafeOriginDomains) {\n      let result = await test_origin(sdk, request, unsafeOrigin);\n      if (result) {\n        await createCorsFinding(sdk, result.request, unsafeOrigin, result.allowsCreds, `CORS Misconfig ${request.getHost()}${request.getPath()} - unsafe origin: ${unsafeOrigin}`);\n      }\n    }\n  }\n}\nasync function test_origin(sdk, req, new_origin) {\n  const newReq = toRequestSpec(req);\n  newReq.setHeader(\"Origin\", new_origin);\n  let requestResponse = await sdk.requests.send(newReq);\n  let resp = requestResponse.response;\n  let respACAO = resp.getHeader(\"Access-Control-Allow-Origin\")[0];\n  let respACAC = resp.getHeader(\"Access-Control-Allow-Credentials\")[0];\n  sdk.console.log(`CORS test - Origin: ${new_origin} - Response ACAO: ${respACAO}`);\n  if (respACAO) {\n    if (respACAC == \"true\" && respACAO == \"*\") {\n      return;\n    }\n    if (respACAO == \"null\" || respACAO == \"*\" || respACAO.indexOf(new_origin) != -1) {\n      return {\n        request: requestResponse.request,\n        allowsCreds: respACAC == \"true\"\n      };\n    }\n  }\n}\nasync function createCorsFinding(sdk, request, payload, allowsCreds, description) {\n  const resourceLinks = [\n    \"https://portswigger.net/research/exploiting-cors-misconfigurations-for-bitcoins-and-bounties\",\n    \"https://corben.io/blog/18-6-16-advanced-cors-techniques\"\n  ].join(\"\\n\");\n  const credsString = allowsCreds ? \"(with creds) \" : \"\";\n  await sdk.findings.create({\n    title: `CORS Misconfig ${credsString}- ${payload}`,\n    description: description + \"\\n\\n\" + resourceLinks,\n    request,\n    reporter: \"CORSMisconfig\",\n    dedupeKey: description\n  });\n}\nfunction toRequestSpec(request) {\n  const spec = new RequestSpec(request.getUrl());\n  spec.setTls(request.getTls());\n  spec.setHost(request.getHost());\n  spec.setPort(request.getPort());\n  spec.setMethod(request.getMethod());\n  spec.setPath(request.getPath());\n  if (request.getQuery()) {\n    spec.setQuery(request.getQuery());\n  }\n  Object.entries(request.getHeaders()).forEach(([header, values]) => {\n    values.forEach((value) => {\n      spec.setHeader(header, value);\n    });\n  });\n  if (request.getBody()) {\n    spec.setBody(request.getBody());\n  }\n  return spec;\n}\nfunction extractDomain(hostname) {\n  if (hostname === \"localhost\" || /^\\d+\\.\\d+\\.\\d+\\.\\d+$/.test(hostname)) {\n    return hostname;\n  }\n  const parts = hostname.split(\".\");\n  if (parts.length <= 2) return hostname;\n  const slds = [\"co\", \"com\", \"org\", \"net\", \"gov\", \"edu\", \"ac\", \"mil\"];\n  if (parts.length > 2 && slds.includes(parts[parts.length - 2])) {\n    return parts.slice(-3).join(\".\");\n  }\n  return parts.slice(-2).join(\".\");\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "active_start",
+            "output": "input"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "active_start",
+          "port": "exec"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

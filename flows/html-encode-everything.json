@@ -1,0 +1,50 @@
+{
+  "edition": 1,
+  "kind": "convert",
+  "name": "HTML Encode Everything",
+  "description": "Workflow to encode all characters to HTML entity",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/manual-start",
+        "alias": "convert_start",
+        "display": {
+          "x": 0,
+          "y": -10
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": 0,
+          "y": 90
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/html-encode-everything/javascript.ts\nfunction run(input, sdk) {\n  const parsed = sdk.asString(input);\n  let result = \"\";\n  for (const char of parsed) {\n    result += `&#${char.charCodeAt(0)};`;\n  }\n  return result;\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "convert_start",
+            "output": "input"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "convert_start",
+          "port": "exec"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}

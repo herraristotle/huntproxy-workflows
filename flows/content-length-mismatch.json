@@ -1,0 +1,69 @@
+{
+  "edition": 1,
+  "kind": "passive",
+  "name": "Content-Length Mismatch",
+  "description": "Mismatch between CL that the server sends and the actual content length.",
+  "graph": {
+    "nodes": [
+      {
+        "type": "flow/js",
+        "alias": "javascript",
+        "display": {
+          "x": -50,
+          "y": 170
+        },
+        "inputs": {
+          "code": {
+            "kind": "const",
+            "value": "// build/wf/content-length-mismatch/javascript.ts\nasync function run({ request, response }, sdk) {\n  if (response && request.getMethod() != \"HEAD\") {\n    const realLength = response.getBody().toRaw().length;\n    const headers = response.getHeader(\"Content-Length\");\n    if (headers !== void 0 && headers.length > 0 && Number(headers[0]) !== realLength) {\n      const description = `The Content-Length header is set to ${headers[0]} but the actual content length is ${realLength}`;\n      await sdk.findings.create({\n        title: \"Content-Length header does not match actual content length\",\n        description,\n        request,\n        reporter: \"Content-Length Mismatch Checker\",\n        dedupeKey: description\n      });\n    }\n  }\n}\n"
+          },
+          "input": {
+            "kind": "ref",
+            "node": "on_intercept_response",
+            "output": "exchange"
+          }
+        }
+      },
+      {
+        "type": "flow/in-scope",
+        "alias": "in_scope",
+        "display": {
+          "x": -40,
+          "y": 40
+        },
+        "inputs": {}
+      },
+      {
+        "type": "flow/on-intercept-response",
+        "alias": "on_intercept_response",
+        "display": {
+          "x": -40,
+          "y": -60
+        },
+        "inputs": {}
+      }
+    ],
+    "edges": [
+      {
+        "source": {
+          "node": "on_intercept_response",
+          "port": "exec"
+        },
+        "target": {
+          "node": "in_scope",
+          "port": "exec"
+        }
+      },
+      {
+        "source": {
+          "node": "in_scope",
+          "port": "true"
+        },
+        "target": {
+          "node": "javascript",
+          "port": "exec"
+        }
+      }
+    ]
+  }
+}
